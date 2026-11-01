@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom'
+
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -11,33 +13,52 @@ const potholeIcon = L.icon({
     popupAnchor: [0, -32],
 });
 
-function buildPopup(p) {
+function createPopupContent(p) {
     const el = document.createElement('div');
+    el.style.width = 'min(400px, 70vw)';
+    el.style.textAlign = 'center';
+    el.style.display = 'flex';
+    el.style.flexDirection = 'column';
+    el.style.alignItems = 'center';
+    el.style.justifyContent = 'center';
+    el.style.gap = '8px';
+    el.style.fontFamily = 'Arial, sans-serif';
 
-    if (p.imageUrl) {
+
+    if (p.image_url) {
         const img = document.createElement('img');
-        img.src = p.imageUrl;
+        img.src = p.image_url;
         img.alt = 'Pothole';
-        img.style.width = '240px';
-        img.style.maxWidth = '100%';
+        img.loading = 'lazy';
+        img.style.width = '100%';
+        img.style.aspectRatio = '1 / 1';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '8px';
         el.appendChild(img);
     }
 
     const caption = document.createElement('p');
-    caption.textContent = p.note || 'No additional details';
+    caption.textContent = p.description || 'No additional details';
     el.appendChild(caption);
 
     return el;
 }
-
 export default function PotholeMap({ potholes = [] }) {
+
+    const [searchParams] = useSearchParams();
+
+    const lat = parseFloat(searchParams.get('lat'));
+    const lng = parseFloat(searchParams.get('lng'));
+    const zoom = parseInt(searchParams.get('zoom')) || 13;
+    const hasZoom = Number.isFinite(zoom) && zoom >= 0 && zoom <= 19;
+    const hasPosition = Number.isFinite(lat) && Number.isFinite(lng);
     const containerRef = useRef(null);
     const groupRef = useRef(null);
 
     useEffect(() => {
         const map = L.map(containerRef.current, {
-            center: [12.9716, 77.5946],
-            zoom: 12,
+            center: hasPosition ? [lat, lng] : [12.9716, 77.5946],
+            zoom: hasZoom ? zoom : 13,
         });
 
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -60,13 +81,13 @@ export default function PotholeMap({ potholes = [] }) {
         group.clearLayers();
 
         potholes.forEach((p) => {
-            if (!Number.isFinite(p.lat) || !Number.isFinite(p.lng)) return;
+            if (!Number.isFinite(p.latitude) || !Number.isFinite(p.longitude)) return;
 
-            L.marker([p.lat, p.lng], {
+            L.marker([p.latitude, p.longitude], {
                 icon: potholeIcon,
                 title: 'Pothole',
             })
-                .bindPopup(buildPopup(p), { maxWidth: 260 })
+                .bindPopup(createPopupContent(p), { maxWidth: 400 })
                 .addTo(group);
         });
     }, [potholes]);
