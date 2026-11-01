@@ -2,7 +2,8 @@ from pymongo import MongoClient
 from datetime import datetime, timezone
 from config import MONGODB_URL
 
-client = MongoClient(MONGODB_URL)
+client = MongoClient(MONGODB_URL, serverSelectionTimeoutMS=5000)
+print(client.admin.command("ping"))
 
 db = client["road_report"]
 reports = db["reports"]
