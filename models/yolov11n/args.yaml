@@ -2,9 +2,9 @@ task: detect
 mode: train
 model: yolo11n.pt
 data: c:\Users\vallu\Desktop\Road Report\datasets\pothole-data/data.yaml
-epochs: 100
+epochs: 25
 time: null
-patience: 10
+patience: 5
 batch: 8
 imgsz: 512
 save: true
@@ -18,7 +18,7 @@ exist_ok: false
 pretrained: true
 cls_remap: true
 optimizer: auto
-verbose: true
+verbose: false
 seed: 0
 deterministic: true
 single_cls: false
