@@ -26,7 +26,7 @@ const potholes = [
 ];
   return (
     <>
-      <PotholeMap />
+      <PotholeMap potholes={potholes}/>
     </>
   )
 }

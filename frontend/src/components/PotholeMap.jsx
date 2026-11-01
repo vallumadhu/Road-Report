@@ -2,23 +2,31 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-L.Icon.Default.mergeOptions({
+import markerIcon from '../assets/pothole-icon.png';
+
+const potholeIcon = L.icon({
     iconUrl: markerIcon,
-    iconRetinaUrl: markerIcon2x,
-    shadowUrl: markerShadow,
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32],
 });
 
 function buildPopup(p) {
     const el = document.createElement('div');
-    const img = document.createElement('img');
-    img.src = p.imageUrl;
-    img.style.width = '240px';
+
+    if (p.imageUrl) {
+        const img = document.createElement('img');
+        img.src = p.imageUrl;
+        img.alt = 'Pothole';
+        img.style.width = '240px';
+        img.style.maxWidth = '100%';
+        el.appendChild(img);
+    }
+
     const caption = document.createElement('p');
-    caption.textContent = p.note;
-    el.append(img, caption);
+    caption.textContent = p.note || 'No additional details';
+    el.appendChild(caption);
+
     return el;
 }
 
@@ -50,8 +58,14 @@ export default function PotholeMap({ potholes = [] }) {
         if (!group) return;
 
         group.clearLayers();
+
         potholes.forEach((p) => {
-            L.marker([p.lat, p.lng], { title: 'Pothole' })
+            if (!Number.isFinite(p.lat) || !Number.isFinite(p.lng)) return;
+
+            L.marker([p.lat, p.lng], {
+                icon: potholeIcon,
+                title: 'Pothole',
+            })
                 .bindPopup(buildPopup(p), { maxWidth: 260 })
                 .addTo(group);
         });

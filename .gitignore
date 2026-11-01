@@ -1,2 +1,6 @@
 .env
+.env.*
+!.env.example
 datasets/
+__pycache__/
+*.py[cod]
